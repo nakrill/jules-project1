@@ -1,13 +1,14 @@
 import json
 
-def generate_html_report(filtered_apartments, output_filepath="apartments_report.html"):
+def generate_html_report(filtered_apartments):
     """
-    Generates an HTML report from a list of apartment data.
+    Generates an HTML report string from a list of apartment data.
 
     Args:
         filtered_apartments (list): A list of dictionaries, where each
                                     dictionary represents an apartment.
-        output_filepath (str): The path to save the generated HTML file.
+    Returns:
+        str: The generated HTML content as a string.
     """
     html_content = """
 <!DOCTYPE html>
@@ -41,7 +42,7 @@ def generate_html_report(filtered_apartments, output_filepath="apartments_report
         for i, apartment in enumerate(filtered_apartments):
             html_content += '        <div class="apartment">\n'
             html_content += f"            <h3>{apartment.get('title', 'N/A')}</h3>\n"
-            
+
             price_str = apartment.get('price', 'N/A')
             additional_rent = apartment.get('additional_rent', 'N/A')
             if additional_rent and additional_rent != "N/A" and price_str != "N/A" and "zapytaj" not in price_str.lower() :
@@ -53,7 +54,7 @@ def generate_html_report(filtered_apartments, output_filepath="apartments_report
             html_content += f"            <p><strong>Location:</strong> {apartment.get('location', 'N/A')}</p>\n"
             html_content += f"            <p><strong>Rooms:</strong> {apartment.get('rooms', 'N/A')}</p>\n"
             html_content += f"            <p><strong>Area:</strong> {apartment.get('area', 'N/A')}</p>\n"
-            
+
             link = apartment.get('link', '#')
             if link != "#" and link != "N/A":
                  html_content += f'            <p><strong>Link:</strong> <a href="{link}" target="_blank">View Original Listing</a></p>\n'
@@ -75,37 +76,32 @@ def generate_html_report(filtered_apartments, output_filepath="apartments_report
 </body>
 </html>
 """
-    try:
-        with open(output_filepath, 'w', encoding='utf-8') as f:
-            f.write(html_content)
-        print(f"Report generated: {output_filepath}")
-    except IOError as e:
-        print(f"Error writing HTML report to file: {e}")
+    return html_content
 
 
 if __name__ == "__main__":
     sample_data = [
         {
-            "title": "Mieszkanie w Katowicach Centrum", "price": "2500 zł", 
-            "additional_rent": "500 zł", "location": "Katowice, Śródmieście", 
+            "title": "Mieszkanie w Katowicach Centrum", "price": "2500 zł",
+            "additional_rent": "500 zł", "location": "Katowice, Śródmieście",
             "rooms": "3 pokoje", "area": "60 m²", "link": "https://example.com/link1",
             "pet_policy_info": "Akceptowane", "lease_term_info": "Minimum 12 miesięcy"
         },
         {
-            "title": "Kawalerka blisko rynku", "price": "1800 zł", 
-            "additional_rent": "N/A", "location": "Katowice, Rynek", 
+            "title": "Kawalerka blisko rynku", "price": "1800 zł",
+            "additional_rent": "N/A", "location": "Katowice, Rynek",
             "rooms": "Kawalerka", "area": "30 m²", "link": "https://example.com/link2",
             "pet_policy_info": "Nieakceptowane", "lease_term_info": "N/A"
         },
         {
-            "title": "Apartament bez linku", "price": "3200 zł", 
-            "additional_rent": "600 zł", "location": "Kraków, Stare Miasto", 
+            "title": "Apartament bez linku", "price": "3200 zł",
+            "additional_rent": "600 zł", "location": "Kraków, Stare Miasto",
             "rooms": "2 pokoje", "area": "55 m²", "link": "N/A", # Test N/A link
             "pet_policy_info": "Information not found", "lease_term_info": "Minimum 6 miesięcy"
         },
         {
-            "title": "Mieszkanie bez ceny", "price": "N/A", 
-            "additional_rent": "N/A", "location": "Katowice, Koszutka", 
+            "title": "Mieszkanie bez ceny", "price": "N/A",
+            "additional_rent": "N/A", "location": "Katowice, Koszutka",
             "rooms": "1 pokój", "area": "28 m²", "link": "https://example.com/link5",
             "pet_policy_info": "N/A", "lease_term_info": "N/A"
         }
@@ -113,7 +109,24 @@ if __name__ == "__main__":
 
     empty_data = []
 
-    generate_html_report(sample_data, "apartments_report_sample.html")
-    generate_html_report(empty_data, "apartments_report_empty.html")
-    
-    print("\nScript finished. Check for 'apartments_report_sample.html' and 'apartments_report_empty.html'.")
+    # Generate HTML string from sample data
+    sample_html_output = generate_html_report(sample_data)
+    output_filepath_sample = "apartments_report_from_string_sample.html"
+    try:
+        with open(output_filepath_sample, 'w', encoding='utf-8') as f:
+            f.write(sample_html_output)
+        print(f"Sample report generated to: {output_filepath_sample}")
+    except IOError as e:
+        print(f"Error writing sample HTML report to file: {e}")
+
+    # Generate HTML string from empty data
+    empty_html_output = generate_html_report(empty_data)
+    output_filepath_empty = "apartments_report_from_string_empty.html"
+    try:
+        with open(output_filepath_empty, 'w', encoding='utf-8') as f:
+            f.write(empty_html_output)
+        print(f"Empty report generated to: {output_filepath_empty}")
+    except IOError as e:
+        print(f"Error writing empty HTML report to file: {e}")
+
+    print("\nScript finished. Check for generated HTML files from string output.")

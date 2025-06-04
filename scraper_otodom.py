@@ -18,7 +18,7 @@ def setup_driver():
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--window-size=1920,1080")
     options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36")
-    
+
     try:
         service = ChromeService(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=options)
@@ -39,7 +39,7 @@ def scrape_otodom_listings(target_url, max_pages_to_scrape=2):
     try:
         print(f"Navigating to {target_url} with Selenium...")
         driver.get(target_url)
-        time.sleep(3) 
+        time.sleep(3)
 
         print("Attempting to handle cookie consent banner...")
         try:
@@ -48,7 +48,7 @@ def scrape_otodom_listings(target_url, max_pages_to_scrape=2):
             )
             cookie_button.click()
             print("Clicked cookie accept button.")
-            time.sleep(2) 
+            time.sleep(2)
         except Exception as e_cookie:
             print(f"Cookie accept button not found or not clickable: {str(e_cookie).splitlines()[0]}.")
             try:
@@ -69,12 +69,12 @@ def scrape_otodom_listings(target_url, max_pages_to_scrape=2):
                 print("Listing items found.")
             except Exception as e_wait:
                 print(f"Timeout waiting for listing items on page {current_page_num}: {e_wait}")
-                break 
+                break
 
-            for i in range(1, 5): 
+            for i in range(1, 5):
                 driver.execute_script(f"window.scrollTo(0, document.body.scrollHeight * {i/4});")
                 time.sleep(1.5)
-            time.sleep(3) 
+            time.sleep(3)
 
             html_content = driver.page_source
             soup = BeautifulSoup(html_content, 'html.parser')
@@ -95,7 +95,7 @@ def scrape_otodom_listings(target_url, max_pages_to_scrape=2):
                 if link_tag and link_tag.has_attr('href'):
                     link_href = link_tag['href']
                     link = "https://www.otodom.pl" + link_href if not link_href.startswith('http') else link_href
-                
+
                 title_tag = item_html.select_one('[data-cy="listing-item-title"]')
                 if title_tag:
                     title = title_tag.get_text(strip=True)
@@ -104,7 +104,7 @@ def scrape_otodom_listings(target_url, max_pages_to_scrape=2):
                 price_tag_primary = item_html.select_one('div[data-cy="card-price"] span:first-of-type')
                 if not price_tag_primary:
                     price_tag_primary = item_html.select_one('span.css-rmqm02.eclomwz0') # class from previous analysis
-                
+
                 if price_tag_primary:
                     price_text = price_tag_primary.get_text(strip=True)
                     if "zapytaj" in price_text.lower():
@@ -114,8 +114,8 @@ def scrape_otodom_listings(target_url, max_pages_to_scrape=2):
                         if match:
                             price = match.group(1).strip().replace(' ', '') + " zł"
                         else:
-                            price = price_text 
-                
+                            price = price_text
+
                 # Czynsz (Rent Supplement - Best Effort)
                 additional_rent_tag = item_html.find("span", string=re.compile(r'^\+\s*([\d\s,]+)\s*zł\s*(czynsz|dodatkowo|media)', re.IGNORECASE))
                 if additional_rent_tag:
@@ -127,7 +127,7 @@ def scrape_otodom_listings(target_url, max_pages_to_scrape=2):
                 location_tag = item_html.select_one('p[data-cy="listing-item-location"]')
                 if location_tag:
                     location_str = location_tag.get_text(strip=True)
-                
+
                 # Rooms & Area (Reliable)
                 attributes_container = item_html.select_one("div[data-cy='listing-item-attributes-container'], div[role='group']")
                 if not attributes_container:
@@ -135,11 +135,11 @@ def scrape_otodom_listings(target_url, max_pages_to_scrape=2):
 
                 room_tag = attributes_container.find(["span","div","li"], string=re.compile(r'^\d+\s*(pokoj|pokoje|pokoi|kawalerka)\b', re.I))
                 if room_tag: rooms = room_tag.get_text(strip=True)
-                
+
                 area_tag = attributes_container.find(["span","div","li"], string=re.compile(r'\d+([,.]\d+)?\s*m²'))
-                if area_tag and "zł/m²" not in area_tag.get_text(strip=True): 
+                if area_tag and "zł/m²" not in area_tag.get_text(strip=True):
                     area = area_tag.get_text(strip=True)
-                
+
                 listings_data.append({
                     "title": title,
                     "price": price,
@@ -149,7 +149,7 @@ def scrape_otodom_listings(target_url, max_pages_to_scrape=2):
                     "area": area,
                     "link": link
                 })
-            
+
             if current_page_num < max_pages_to_scrape:
                 try:
                     print("Looking for 'next page' button...")
@@ -157,23 +157,23 @@ def scrape_otodom_listings(target_url, max_pages_to_scrape=2):
                     next_page_button = WebDriverWait(driver, 15).until(
                         EC.element_to_be_clickable((By.CSS_SELECTOR, next_page_button_selector))
                     )
-                    
+
                     ref_elements_before_click = driver.find_elements(By.CSS_SELECTOR, 'article[data-cy="listing-item"]')
                     ref_element_for_staleness = ref_elements_before_click[0] if ref_elements_before_click else None
-                    
+
                     driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center', inline: 'center'});", next_page_button)
-                    time.sleep(1) 
+                    time.sleep(1)
                     driver.execute_script("arguments[0].click();", next_page_button)
                     print("'Next page' button clicked.")
                     current_page_num += 1
-                    
+
                     print("Waiting for page content to update (max 30s)...")
                     if ref_element_for_staleness:
                         WebDriverWait(driver, 30).until(EC.staleness_of(ref_element_for_staleness))
-                    else: 
+                    else:
                         print("No reference element for staleness check, using fixed time wait (10s).")
-                        time.sleep(10) 
-                        
+                        time.sleep(10)
+
                     WebDriverWait(driver, 25).until(
                         EC.presence_of_all_elements_located((By.CSS_SELECTOR, "article[data-cy='listing-item']"))
                     )
@@ -195,15 +195,15 @@ def scrape_otodom_listings(target_url, max_pages_to_scrape=2):
 
 if __name__ == "__main__":
     OTODOM_URL = "https://www.otodom.pl/pl/oferty/wynajem/mieszkanie/katowice"
-    
+
     print("Starting Otodom scraper...")
     # Scrape 2 pages as per final requirement
-    scraped_data = scrape_otodom_listings(OTODOM_URL, max_pages_to_scrape=2) 
+    scraped_data = scrape_otodom_listings(OTODOM_URL, max_pages_to_scrape=2)
 
     if scraped_data:
         print(f"\nSuccessfully scraped {len(scraped_data)} listings.")
         # Print details of the first 3-5 listings
-        for i, listing in enumerate(scraped_data[:5]): 
+        for i, listing in enumerate(scraped_data[:5]):
             print(f"\nListing {i+1}:")
             print(json.dumps(listing, indent=2, ensure_ascii=False))
     else:

@@ -49,10 +49,10 @@ def main_orchestrator():
             # Pass LISTINGS_TO_GET_DETAILS_FOR to the scraper if its signature supports it.
             # Assuming scrape_otodom_listings takes (url, max_pages, listings_to_get_details_for)
             # Based on previous definition of scrape_otodom_listings:
-            raw_listings = scrape_otodom_listings(OTODOM_URL, 
+            raw_listings = scrape_otodom_listings(OTODOM_URL,
                                                  max_pages_to_scrape=MAX_SCRAPING_PAGES,
                                                  listings_to_get_details_for=LISTINGS_TO_GET_DETAILS_FOR)
-            
+
             if raw_listings:
                 print(f"Successfully scraped {len(raw_listings)} raw listings.")
                 # Optionally print a sample for debugging

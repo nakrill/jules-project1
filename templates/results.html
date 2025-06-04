@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Apartment Results</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .apartment { border: 1px solid #ccc; padding: 10px; margin-bottom: 15px; }
+        .apartment h3 { margin-top: 0; }
+        .apartment p { margin: 5px 0; }
+        .no-data { font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1>Apartment Listing Results</h1>
+
+    {% if apartments %}
+        <p>Found {{ apartments|length }} apartments matching your criteria:</p>
+        {% for apartment in apartments %}
+            <div class="apartment">
+                <h3>{{ apartment.title | default('N/A') }}</h3>
+                <p><strong>Price:</strong> {{ apartment.price | default('N/A') }}
+                   {% if apartment.additional_rent and apartment.additional_rent != 'N/A' %}
+                       + {{ apartment.additional_rent }}
+                   {% endif %}
+                </p>
+                <p><strong>Location:</strong> {{ apartment.location | default('N/A') }}</p>
+                <p><strong>Rooms:</strong> {{ apartment.rooms | default('N/A') }}</p>
+                <p><strong>Area:</strong> {{ apartment.area | default('N/A') }}</p>
+                {% if apartment.link and apartment.link != 'N/A' %}
+                    <p><a href="{{ apartment.link }}" target="_blank">View Original Listing</a></p>
+                {% else %}
+                    <p>Link: N/A</p>
+                {% endif %}
+            </div>
+            <hr>
+        {% endfor %}
+    {% else %}
+        <p class="no-data">No apartments found matching your criteria, or an error occurred during processing.</p>
+    {% endif %}
+
+    <p><a href="/">Back to Search</a></p>
+</body>
+</html>

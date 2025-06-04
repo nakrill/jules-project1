@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Property Aggregator</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        label { display: block; margin-top: 10px; }
+        input[type="number"], input[type="text"] { padding: 5px; margin-top: 5px; }
+        input[type="submit"] { margin-top: 15px; padding: 8px 15px; }
+    </style>
+</head>
+<body>
+    <h1>Property Aggregator</h1>
+    <form method="POST" action="/">
+        <label for="min_rooms">Minimum number of rooms:</label>
+        <input type="number" id="min_rooms" name="min_rooms" value="3" min="1">
+
+        <!-- For now, city is fixed, but we can show it -->
+        <p>City: Katowice (fixed for this version)</p>
+
+        <input type="submit" value="Search Apartments">
+    </form>
+</body>
+</html>

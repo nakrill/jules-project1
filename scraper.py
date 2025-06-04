@@ -16,7 +16,7 @@ def setup_driver():
     options.add_argument("--disable-dev-shm-usage") # Standard for running in containers/CI
     options.add_argument("--window-size=1920,1080") # Specify window size
     options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-    
+
     # Automatically download and install the latest ChromeDriver
     service = ChromeService(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
@@ -48,7 +48,7 @@ def scrape_gratka_listings_selenium(base_url, city_path="katowice", max_pages=1)
             "//button[contains(translate(normalize-space(text()), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'zgadzam się na wszystko')]",
             "//button[contains(translate(normalize-space(text()), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'accept all')]"
         ]
-        
+
         popup_handled_flag = False
         for i, selector in enumerate(cookie_accept_selectors_priority):
             try:
@@ -90,7 +90,7 @@ def scrape_gratka_listings_selenium(base_url, city_path="katowice", max_pages=1)
                     break
                 except Exception as e_generic_cookie:
                     print(f"Generic cookie selector {selector} failed: {str(e_generic_cookie).splitlines()[0]}")
-        
+
         if not popup_handled_flag:
             print("No popups explicitly handled by click. Trying to send 'Escape' key.")
             try:
@@ -109,15 +109,15 @@ def scrape_gratka_listings_selenium(base_url, city_path="katowice", max_pages=1)
             driver.execute_script(f"window.scrollTo(0, document.body.scrollHeight * {scroll_height_fraction});")
             print(f"Scroll {i+1}/8 to {scroll_height_fraction*100:.0f}% of page height.")
             time.sleep(2) # Wait for content to load after each scroll
-        
+
         print("Finished scrolling. Performing a very long wait (20s) for any extremely delayed JS rendering...")
-        time.sleep(20) 
+        time.sleep(20)
 
         # --- Step 3: Attempt to find a general "Listings Area" container ---
         print("Attempting to find a general listings area container...")
         listings_area_html = None
         listings_area_selector_used = None
-        
+
         # More diverse selectors for the main area that should contain listings
         possible_listings_area_selectors = [
             "div[data-cy='search.listing.regular']", # From a quick manual check of similar sites / common patterns
@@ -150,14 +150,14 @@ def scrape_gratka_listings_selenium(base_url, city_path="katowice", max_pages=1)
             soup_area = BeautifulSoup(listings_area_html, 'html.parser')
             print(soup_area.prettify()[:30000]) # Print up to 30k chars of the container's content
             print("--- End of Listings Area Snippet ---\n")
-            
+
             # Now, try to find the first listing item *within* this container
             print("Attempting to find the first listing item *within* the identified listings area...")
             soup_for_item_search = BeautifulSoup(listings_area_html, 'html.parser')
             # Selectors for items, relative to the container
             possible_listing_item_selectors_relative = [
-                "article[class*='teaserUnified']", "article[class*='listing-item']", 
-                "div[class*='teaserUnified']", "div[class*='listing-item']", 
+                "article[class*='teaserUnified']", "article[class*='listing-item']",
+                "div[class*='teaserUnified']", "div[class*='listing-item']",
                 "div[data-listing-id]", "div[data-testid='listing-item']"
             ]
             first_item_html_within_area = None
@@ -167,7 +167,7 @@ def scrape_gratka_listings_selenium(base_url, city_path="katowice", max_pages=1)
                     print(f"Found first listing item within area using relative selector: {item_selector_rel}")
                     first_item_html_within_area = first_item.prettify()
                     break
-            
+
             if first_item_html_within_area:
                 print("\n--- HTML Snippet of First Listing Item (found within area) ---")
                 print(first_item_html_within_area)
@@ -184,7 +184,7 @@ def scrape_gratka_listings_selenium(base_url, city_path="katowice", max_pages=1)
             print(f"(Page source length: {len(current_page_source)} chars)")
             print(current_page_source[:250000]) # Increased snippet size
             print("\n--- End of General Page Source Snippet ---\n")
-            
+
         print("Inspection step complete. Returning empty list for this run.")
 
     except Exception as e:
@@ -192,7 +192,7 @@ def scrape_gratka_listings_selenium(base_url, city_path="katowice", max_pages=1)
     finally:
         print("Closing WebDriver.")
         driver.quit()
-    
+
     return listings_data
 
 if __name__ == "__main__":
