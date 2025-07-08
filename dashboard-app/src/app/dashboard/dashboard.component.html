@@ -1,0 +1,12 @@
+<mat-sidenav-container class="dashboard-container">
+  <mat-sidenav mode="side" opened class="sidenav">
+    <app-side-menu></app-side-menu>
+  </mat-sidenav>
+  <mat-sidenav-content class="content">
+    <app-header></app-header>
+    <main class="main-content">
+      <!-- The main content will be rendered here by the router -->
+      <router-outlet></router-outlet>
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>
